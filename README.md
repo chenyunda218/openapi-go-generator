@@ -1,0 +1,1 @@
+# openapi-go-gin-genertor
