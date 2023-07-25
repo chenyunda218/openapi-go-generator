@@ -1,0 +1,345 @@
+openapi: 3.0.3
+info:
+  title: Example Cloud APIs
+  description: |-
+    Example cloud console api
+  contact:
+    email: chenyunda218@gmail.com
+  version: 0.0.1
+servers:
+  - url: http://localhost/api/v1
+tags:
+  - name: Account
+    description: Api of account
+  - name: Services
+    description: Api of services
+paths:
+  /account:
+    get:
+      tags:
+        - Account
+      description: Get account detail
+      operationId: GetAccount
+      responses:
+        "200":
+          description: Success get account detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+  /account/session:
+    post:
+      tags:
+        - Account
+      description: Create Login session
+      operationId: CreateSession
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSessionRequest"
+      responses:
+        "201":
+          description: "Account created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+  /accounts:
+    post:
+      tags:
+        - Account
+      description: Create user account
+      operationId: CreateAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountRequest"
+      responses:
+        "201":
+          description: "Account created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+    get:
+      tags:
+        - Account
+      description: Create user account
+      operationId: ListAccount
+      parameters:
+        - $ref: "#/components/parameters/Ordering"
+        - $ref: "#/components/parameters/IndexParam"
+        - $ref: "#/components/parameters/LimitParam"
+      responses:
+        "200":
+          description: "Account created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountList"
+  /accounts/session/verification:
+    get:
+      tags:
+        - Account
+      description: "Verify jwt"
+      operationId: VerifySession
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionVerificationRequest"
+      responses:
+        "200":
+          description: "Verification"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+  /services:
+    post:
+      tags:
+        - Services
+      description: Create service
+      operationId: CreateService
+      responses:
+        "201":
+          description: "Success created service"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+    get:
+      tags:
+        - Services
+      operationId: ListServices
+      description: List services
+      parameters:
+        - name: good
+          in: query
+          description: "Total pages"
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+        - $ref: "#/components/parameters/LimitParam"
+      responses:
+        "200":
+          description: "Success list services"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceList"
+  /services/{id}:
+    get:
+      tags:
+        - Services
+      operationId: GetService
+      description: List services
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "Success list services"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceList"
+components:
+  schemas:
+    TestArray:
+      description: "Test array"
+      type: array
+      items:
+        $ref: "#/components/schemas/Account"
+    SessionVerificationRequest:
+      description: "Session verification request"
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+    CreateSessionRequest:
+      description: "Login request"
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          minLength: 11
+          maxLength: 11
+        password:
+          type: string
+          minLength: 10
+          maxLength: 128
+    CreateAccountRequest:
+      description: "Create account request schema"
+      required:
+        - email
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        role:
+          $ref: "#/components/schemas/Role"
+    Role:
+      type: string
+      enum: [ROOT, ADMIN, USER]
+    AccountProperties:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        role:
+          $ref: "#/components/schemas/Role"
+    Account:
+      allOf:
+        - $ref: "#/components/schemas/AccountProperties"
+        - type: object
+          required:
+            - id
+            - email
+            - role
+          properties:
+            id:
+              type: string
+    AccountList:
+      description: "Account list"
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Account"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    Service:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+        type:
+          $ref: "#/components/schemas/ServiceType"
+    CreateServiceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+        type:
+          $ref: "#/components/schemas/ServiceType"
+    ServiceType:
+      type: string
+      enum: ["IAAS", "PAAS", "SAAS"]
+    ServiceList:
+      description: "Service list"
+      type: object
+      required:
+        - "pagination"
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Service"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    Session:
+      type: object
+      properties:
+        account:
+          $ref: "#/components/schemas/Account"
+        token:
+          type: string
+        tokenType:
+          type: string
+          default: Bearer
+        tokenFormat:
+          type: string
+          default: jwt
+        expiredAt:
+          type: integer
+          format: int64
+        createdAt:
+          type: integer
+          format: int64
+    SessionStatus:
+      type: string
+      enum: ["ACTIVED", "EXPIRED", "DISACTIVED"]
+    SessionVerification:
+      required:
+        - status
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/SessionStatus"
+    Ordering:
+      description: "Ordering"
+      type: string
+      enum: [ASCENDING, DESCENDING]
+    Pagination:
+      description: "Pagination"
+      type: object
+      properties:
+        index:
+          type: integer
+          format: int64
+          description: "Current page"
+        limit:
+          type: integer
+          format: int64
+          description: "Amount per page"
+        total:
+          type: integer
+          format: int64
+          description: "Total page"
+  parameters:
+    Ordering:
+      name: ordering
+      description: "ASCENDING or DESCENDING"
+      in: query
+      schema:
+        $ref: "#/components/schemas/Ordering"
+    IndexParam:
+      name: index
+      in: query
+      description: "Current page index"
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    LimitParam:
+      name: limit
+      in: query
+      description: "Total pages"
+      schema:
+        type: integer
+        minimum: 1
+        default: 10
