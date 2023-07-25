@@ -88,7 +88,6 @@ func (o Openapi) CreateApiMounter(i gwg.Interface) (fs gwg.Func) {
 	}, gwg.Pair{Left: GWG_API_LABEL, Right: i.Name})
 	for _, m := range i.Methods {
 		path, method := o.GetMethodAndPathByOperationId(m.Name)
-		fmt.Println(path, method)
 		fs.AddLine(gwg.Line{
 			Content: fmt.Sprintf("%s.%s(\"%s\", %s(%s))",
 				GIN_ROUTER_LABEL, strings.ToUpper(method), PathConverter(path), m.Name+"Binder", GWG_API_LABEL),
