@@ -1,6 +1,6 @@
 # openapi-go-gin-genertor
 
-openapi gin api genertor.
+openapi gin server api genertor.
 
 ## CONFIG
 

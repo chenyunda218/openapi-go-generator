@@ -44,7 +44,11 @@ components:
   schemas:
     Dog:
       type: object
+      required:
+        - name
       properties:
+        name:
+          type: string
         bark:
           type: boolean
         breed:

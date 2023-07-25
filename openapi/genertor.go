@@ -341,8 +341,11 @@ func ConvertProperty(label string, s Schema, required bool) gwg.Property {
 			Content: "required",
 		})
 	}
-	var t string = "string"
+	var t string
 	t = ConvertType(s)
+	if !required {
+		t = "*" + t
+	}
 	return gwg.Property{
 		Label: FirstToUpper(label),
 		Type:  t,
