@@ -15,7 +15,7 @@ openapi gin api genertor.
 ```bash
 git clone https://github.com/chenyunda218/openapi-go-gin-genertor
 cd openapi-go-gin-genertor
-go run main.go -o api -p api -i ./openapi.ayml
+go run main.go -o api -p api -i ./openapi.yaml
 ```
 
 Resource openapi yaml
