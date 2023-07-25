@@ -358,7 +358,13 @@ func ConvertType(s Schema) string {
 		return ConvertInteger(s.Format)
 	case "number":
 		return ConvertNumber(s.Format)
+	case "array":
+		if s.Items == nil {
+			panic("Array without times")
+		}
+		return fmt.Sprintf("[]%s", ConvertType(*s.Items))
 	}
+
 	if s.Ref != nil {
 		return RefObject(*s.Ref)
 	}

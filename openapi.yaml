@@ -1,39 +1,29 @@
 openapi: 3.0.3
 info:
-  title: Example Cloud APIs
+  title: Example
   description: |-
-    Example cloud console api
+    Example
   contact:
     email: chenyunda218@gmail.com
   version: 0.0.1
 servers:
   - url: http://localhost/api/v1
 tags:
-  - name: Testing
   - name: Account
     description: Api of account
   - name: Services
     description: Api of services
 paths:
-  /testing/{id}:
-    get:
-      tags:
-        - Testing
-      parameters:
-        - in: path
-          required: true
-          name: "id"
-          schema:
-            type: number
-      description: Get account detail
-      operationId: GetTesting
+  /pets:
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Cat"
       responses:
-        "200":
-          description: Success get account detail
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Account"
+        '200':
+          description: Updated
   /account:
     get:
       tags:
@@ -211,12 +201,40 @@ components:
     Role:
       type: string
       enum: [ROOT, ADMIN, USER]
+    Pet:
+      type: object
+      required:
+        - pet_type
+      properties:
+        pet_type:
+          type: string
+      discriminator:
+        propertyName: pet_type
+    Dog:     # "Dog" is a value for the pet_type property (the discriminator value)
+      allOf: # Combines the main `Pet` schema with `Dog`-specific properties 
+        - $ref: '#/components/schemas/Pet'
+        - type: object
+          # all other properties specific to a `Dog`
+          properties:
+            bark:
+              type: boolean
+            breed:
+              type: string
+              enum: [Dingo, Husky, Retriever, Shepherd]
+    Cat:     # "Cat" is a value for the pet_type property (the discriminator value)
+      allOf: # Combines the main `Pet` schema with `Cat`-specific properties 
+        - $ref: '#/components/schemas/Pet'
+        - type: object
+          # all other properties specific to a `Cat`
+          properties:
+            hunts:
+              type: boolean
+            age:
+              type: integer
     AccountProperties:
       type: object
       properties:
         email:
-          type: string
-        password:
           type: string
         role:
           $ref: "#/components/schemas/Role"
@@ -231,6 +249,10 @@ components:
           properties:
             id:
               type: string
+            pets:
+              type: array
+              items:
+                $ref: "#/components/schemas/Cat"
     AccountList:
       description: "Account list"
       type: object
