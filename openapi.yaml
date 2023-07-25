@@ -93,7 +93,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Session"
-  /services/:{good}:
+  /services/{good}:
     post:
       tags:
         - Services
@@ -124,7 +124,8 @@ paths:
             type: string
           required: true
         - $ref: "#/components/parameters/LimitParam"
-        - $ref: "#/components/parameters/Ordering"
+        - $ref: "#/components/parameters/IndexParam"
+        - $ref: "#/components/parameters/OrderingParam"
       responses:
         "200":
           description: "Success list services"
@@ -316,7 +317,7 @@ components:
           format: int64
           description: "Total page"
   parameters:
-    Ordering:
+    OrderingParam:
       name: ordering
       description: "ASCENDING or DESCENDING"
       in: query
@@ -336,5 +337,6 @@ components:
       description: "Total pages"
       schema:
         type: integer
+        format: int32
         minimum: 1
         default: 10

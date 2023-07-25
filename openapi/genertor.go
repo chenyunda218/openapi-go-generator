@@ -10,13 +10,15 @@ import (
 
 const BODY_NAME = "openapi_go_gin_genertor_body"
 const GIN_CONTEXT_LABEL = "openapi_go_gin_genertor_gin_context"
+const GIN_ROUTER_LABEL = "openapi_go_gin_genertor_gin_router"
+const GWG_API_LABEL = "gwg_api_label"
 
 func (o Openapi) Generate(root string, packageName string) {
 	os.MkdirAll(root, os.ModePerm)
 	writer := gwg.Package{
 		Name: packageName,
 	}
-	writer.AddImport(gwg.Import{Packages: []string{"github.com/gin-gonic/gin"}})
+	writer.AddImport(gwg.Import{Packages: []string{"github.com/gin-gonic/gin", "strconv"}})
 	for _, m := range o.FindModel() {
 		writer.AddCode(m)
 	}
@@ -28,8 +30,74 @@ func (o Openapi) Generate(root string, packageName string) {
 		for _, binder := range o.CreateInterfaceBinders(i) {
 			writer.AddCode(binder)
 		}
+		writer.AddCode(o.CreateApiMounter(i))
 	}
+	writer.AddCode()
+	writer.AddCode(gwg.Func{
+		Name: "stringToInt32",
+		Parameters: gwg.Parameters{
+			Pairs: []gwg.Pair{{Left: "s", Right: "string"}},
+		},
+		Outputs: gwg.Outputs{Pairs: []gwg.Pair{{Right: "int32"}}},
+		Lines: []gwg.Line{
+			{Content: "value, _ := strconv.ParseInt(s, 10, 32)"},
+			{Content: "return int32(value)"},
+		},
+	})
+	writer.AddCode(gwg.Func{
+		Name: "stringToInt64",
+		Parameters: gwg.Parameters{
+			Pairs: []gwg.Pair{{Left: "s", Right: "string"}},
+		},
+		Outputs: gwg.Outputs{Pairs: []gwg.Pair{{Right: "int64"}}},
+		Lines: []gwg.Line{
+			{Content: "value, _ := strconv.ParseInt(s, 10, 64)"},
+			{Content: "return value"},
+		},
+	})
+	writer.AddCode(gwg.Func{
+		Name: "stringToFloat32",
+		Parameters: gwg.Parameters{
+			Pairs: []gwg.Pair{{Left: "s", Right: "string"}},
+		},
+		Outputs: gwg.Outputs{Pairs: []gwg.Pair{{Right: "float32"}}},
+		Lines: []gwg.Line{
+			{Content: "value, _ := strconv.ParseFloat(s, 32)"},
+			{Content: "return float32(value)"},
+		},
+	})
+	writer.AddCode(gwg.Func{
+		Name: "stringToFloat64",
+		Parameters: gwg.Parameters{
+			Pairs: []gwg.Pair{{Left: "s", Right: "string"}},
+		},
+		Outputs: gwg.Outputs{Pairs: []gwg.Pair{{Right: "float64"}}},
+		Lines: []gwg.Line{
+			{Content: "value, _ := strconv.ParseFloat(s, 64)"},
+			{Content: "return value"},
+		},
+	})
 	writer.Wirte(packageName)
+}
+
+func (o Openapi) CreateApiMounter(i gwg.Interface) (fs gwg.Func) {
+	fs.Name = i.Name + "Mounter"
+	fs.Parameters.Add(gwg.Pair{
+		Left:  GIN_ROUTER_LABEL,
+		Right: "*gin.Engine",
+	}, gwg.Pair{Left: GWG_API_LABEL, Right: i.Name})
+	for _, m := range i.Methods {
+		path, method := o.GetMethodAndPathByOperationId(m.Name)
+		fmt.Println(path, method)
+		fs.AddLine(gwg.Line{
+			Content: fmt.Sprintf("%s.%s(\"%s\", %s(%s))",
+				GIN_ROUTER_LABEL, strings.ToUpper(method), PathConverter(path), m.Name+"Binder", GWG_API_LABEL),
+		})
+	}
+	// fs.AddLine(gwg.Line{
+	// 	Content: fmt.Sprintf("%s.",GIN_ROUTER_LABEL),
+	// })
+	return fs
 }
 
 func (o Openapi) CreateInterfaces() (interfaces []gwg.Interface) {
@@ -47,19 +115,33 @@ func (o Openapi) CreateInterfaceBinders(i gwg.Interface) (binders []gwg.Func) {
 	return binders
 }
 
+func (o Openapi) GetMethodAndPathByOperationId(operationId string) (string, string) {
+	for path, methods := range o.Paths {
+		for method, api := range methods {
+			if api.OperationId == operationId {
+				return path, method
+			}
+		}
+	}
+	return "", ""
+}
+
 func (o Openapi) CreateBinder(i gwg.Method, apiName string) (binder gwg.Func) {
 	binder.Name = i.Name + "Binder"
-
 	binder.Parameters.Add(
-		gwg.Pair{
-			Left:  GIN_CONTEXT_LABEL,
-			Right: "*gin.Context",
-		},
+		// gwg.Pair{
+		// 	Left:  GIN_CONTEXT_LABEL,
+		// 	Right: "*gin.Context",
+		// },
 		gwg.Pair{
 			Left:  "api",
 			Right: apiName,
 		},
 	)
+	binder.Outputs.Pairs = append(binder.Outputs.Pairs, gwg.Pair{
+		Right: "func(c *gin.Context)",
+	})
+	binder.AddLine(gwg.Line{"return func(openapi_go_gin_genertor_gin_context *gin.Context) {"})
 	var ps []string = []string{GIN_CONTEXT_LABEL}
 	api := o.GetApiByOperationId(i.Name)
 	var parameters []Parameter
@@ -80,8 +162,14 @@ func (o Openapi) CreateBinder(i gwg.Method, apiName string) (binder gwg.Func) {
 				gwg.Line{Content: fmt.Sprintf("%s := %s.Query(\"%s\")", p.Name, GIN_CONTEXT_LABEL, p.Name)},
 			)
 		}
-		ps = append(ps, p.Name)
+		if p.Ref != nil {
+			finded := o.GetParameter(RefObject(*p.Ref))
+			ps = append(ps, BinderSchema(finded.Schema, finded.Name))
+		} else {
+			ps = append(ps, BinderSchema(p.Schema, p.Name))
+		}
 	}
+	// Body binding
 	if api.RequestBody != nil && api.RequestBody.Content.Json != nil {
 		if api.RequestBody.Content.Json.Schema.Ref != nil {
 			valueName := FirstToLower(RefObject(*api.RequestBody.Content.Json.Schema.Ref))
@@ -98,24 +186,34 @@ func (o Openapi) CreateBinder(i gwg.Method, apiName string) (binder gwg.Func) {
 			ps = append(ps, valueName)
 		}
 	}
-	// for _, p := range i.Parameters.Pairs {
-	// 	if p.Left == BODY_NAME {
-	// 		ps = append(ps, p.Left)
-	// 		binder.AddLine(
-	// 			gwg.Line{Content: fmt.Sprintf("var %s %s", BODY_NAME, p.Right)},
-	// 			gwg.Line{Content: fmt.Sprintf("%s.ShouldBindJSON(&%s)", GIN_CONTEXT_LABEL, BODY_NAME)},
-	// 		)
-	// 	} else if p.Left != GIN_CONTEXT_LABEL {
-	// 		ps = append(ps, p.Left)
-	// 		binder.AddLine(
-	// 			gwg.Line{Content: fmt.Sprintf("%s := %s.Param(\"%s\")", p.Left, GIN_CONTEXT_LABEL, p.Left)},
-	// 		)
-	// 	}
-	// }
 	binder.AddLine(gwg.Line{
 		Content: fmt.Sprintf("api.%s(%s)", i.Name, strings.Join(ps, ", ")),
 	})
+
+	binder.AddLine(gwg.Line{Content: "}"})
 	return binder
+}
+
+func BinderSchema(s Schema, name string) string {
+	if s.Ref != nil {
+		return fmt.Sprintf("%s(%s)", RefObject(*s.Ref), name)
+	}
+	var convert string
+	switch ConvertType(s) {
+	case "string":
+		return name
+	case "int64":
+		convert = "stringToInt64"
+	case "int":
+		convert = "stringToInt64"
+	case "int32":
+		convert = "stringToInt32"
+	case "float32":
+		convert = "stringToFloat32"
+	case "float64":
+		convert = "stringToFloat64"
+	}
+	return fmt.Sprintf("%s(%s)", convert, name)
 }
 
 func (o Openapi) CreateInterface(group string) (i gwg.Interface) {
@@ -131,20 +229,14 @@ func (o Openapi) CreateInterface(group string) (i gwg.Interface) {
 					Right: "*gin.Context",
 				})
 				for _, parameter := range api.Parameters {
-					if parameter.Ref == nil {
-						method.Parameters.Add(gwg.Pair{
-							Left:  parameter.Name,
-							Right: "string",
-						})
-					} else {
-						p := o.GetParameter(RefObject(*parameter.Ref))
-						method.Parameters.Add(gwg.Pair{
-							Left:  p.Name,
-							Right: "string",
-							// Right: RefObject(*parameter.Ref),
-						})
+					p := parameter
+					if p.Ref != nil {
+						p = o.GetParameter(RefObject(*parameter.Ref))
 					}
-
+					method.Parameters.Add(gwg.Pair{
+						Left:  p.Name,
+						Right: ConvertType(p.Schema),
+					})
 				}
 				if api.RequestBody != nil {
 					if api.RequestBody.Content.Json != nil {
@@ -179,18 +271,6 @@ func (o Openapi) GetApiByOperationId(id string) *Api {
 		}
 	}
 	return nil
-}
-
-func (o Openapi) GetParameterWithOperationId(name, operationId string) Parameter {
-	for k, p := range o.Components.Parameters {
-		if k == name {
-			return p
-		}
-	}
-	if api := o.GetApiByOperationId(operationId); api != nil {
-
-	}
-	return Parameter{}
 }
 
 func (o Openapi) FindEnums() []gwg.Enums {
@@ -271,24 +351,27 @@ func ConvertProperty(label string, s Schema, required bool) gwg.Property {
 		})
 	}
 	var t string = "string"
-
-	switch s.Type {
-	case "string":
-		t = "string"
-	case "integer":
-		t = ConvertInteger(s.Format)
-	case "number":
-		t = ConvertNumber(s.Format)
-	}
-	if s.Ref != nil {
-		t = RefObject(*s.Ref)
-	}
-
+	t = ConvertType(s)
 	return gwg.Property{
 		Label: FirstToUpper(label),
 		Type:  t,
 		Tags:  tags,
 	}
+}
+
+func ConvertType(s Schema) string {
+	switch s.Type {
+	case "string":
+		return "string"
+	case "integer":
+		return ConvertInteger(s.Format)
+	case "number":
+		return ConvertNumber(s.Format)
+	}
+	if s.Ref != nil {
+		return RefObject(*s.Ref)
+	}
+	return "string"
 }
 
 func ConvertInteger(format string) string {
@@ -298,7 +381,7 @@ func ConvertInteger(format string) string {
 	case "int32":
 		return "int32"
 	default:
-		return "int"
+		return "int64"
 	}
 }
 
