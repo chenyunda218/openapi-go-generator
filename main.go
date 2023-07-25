@@ -14,13 +14,13 @@ func main() {
 	inputFile := "./openapi.yaml"
 	argsWithoutProg := os.Args[1:]
 	for i, v := range argsWithoutProg {
-		if v == "-o" {
+		if v == "-o" && len(argsWithoutProg) > i+1 {
 			root = argsWithoutProg[i+1]
 		}
-		if v == "-p" {
+		if v == "-p" && len(argsWithoutProg) > i+1 {
 			packageName = argsWithoutProg[i+1]
 		}
-		if v == "-i" {
+		if v == "-i" && len(argsWithoutProg) > i+1 {
 			inputFile = argsWithoutProg[i+1]
 		}
 	}
