@@ -68,10 +68,6 @@ paths:
         - Account
       description: Create user account
       operationId: ListAccount
-      parameters:
-        - $ref: "#/components/parameters/Ordering"
-        - $ref: "#/components/parameters/IndexParam"
-        - $ref: "#/components/parameters/LimitParam"
       responses:
         "200":
           description: "Account created"
@@ -97,7 +93,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Session"
-  /services:
+  /services/:{good}:
     post:
       tags:
         - Services
@@ -115,15 +111,20 @@ paths:
         - Services
       operationId: ListServices
       description: List services
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionVerificationRequest"
       parameters:
-        - name: good
-          in: query
+        - in: path
+          name: good
           description: "Total pages"
           schema:
-            type: integer
-            minimum: 1
-            default: 10
+            type: string
+          required: true
         - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/Ordering"
       responses:
         "200":
           description: "Success list services"
@@ -137,12 +138,6 @@ paths:
         - Services
       operationId: GetService
       description: List services
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
       responses:
         "200":
           description: "Success list services"
