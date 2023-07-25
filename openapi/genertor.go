@@ -2,19 +2,17 @@ package openapi
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/chenyunda218/gwg"
 )
 
-const BODY_NAME = "openapi_go_gin_genertor_body"
-const GIN_CONTEXT_LABEL = "openapi_go_gin_genertor_gin_context"
-const GIN_ROUTER_LABEL = "openapi_go_gin_genertor_gin_router"
+const BODY_NAME = "gin_body"
+const GIN_CONTEXT_LABEL = "gin_context"
+const GIN_ROUTER_LABEL = "gin_router"
 const GWG_API_LABEL = "gwg_api_label"
 
 func (o Openapi) Generate(root string, packageName string) {
-	os.MkdirAll(root, os.ModePerm)
 	writer := gwg.Package{
 		Name: packageName,
 	}
@@ -33,6 +31,7 @@ func (o Openapi) Generate(root string, packageName string) {
 		writer.AddCode(o.CreateApiMounter(i))
 	}
 	writer.AddCode()
+	// Type converter
 	writer.AddCode(gwg.Func{
 		Name: "stringToInt32",
 		Parameters: gwg.Parameters{
@@ -77,7 +76,7 @@ func (o Openapi) Generate(root string, packageName string) {
 			{Content: "return value"},
 		},
 	})
-	writer.Wirte(packageName)
+	writer.Wirte(root)
 }
 
 func (o Openapi) CreateApiMounter(i gwg.Interface) (fs gwg.Func) {
@@ -93,9 +92,6 @@ func (o Openapi) CreateApiMounter(i gwg.Interface) (fs gwg.Func) {
 				GIN_ROUTER_LABEL, strings.ToUpper(method), PathConverter(path), m.Name+"Binder", GWG_API_LABEL),
 		})
 	}
-	// fs.AddLine(gwg.Line{
-	// 	Content: fmt.Sprintf("%s.",GIN_ROUTER_LABEL),
-	// })
 	return fs
 }
 
@@ -128,10 +124,6 @@ func (o Openapi) GetMethodAndPathByOperationId(operationId string) (string, stri
 func (o Openapi) CreateBinder(i gwg.Method, apiName string) (binder gwg.Func) {
 	binder.Name = i.Name + "Binder"
 	binder.Parameters.Add(
-		// gwg.Pair{
-		// 	Left:  GIN_CONTEXT_LABEL,
-		// 	Right: "*gin.Context",
-		// },
 		gwg.Pair{
 			Left:  "api",
 			Right: apiName,
@@ -140,7 +132,7 @@ func (o Openapi) CreateBinder(i gwg.Method, apiName string) (binder gwg.Func) {
 	binder.Outputs.Pairs = append(binder.Outputs.Pairs, gwg.Pair{
 		Right: "func(c *gin.Context)",
 	})
-	binder.AddLine(gwg.Line{"return func(openapi_go_gin_genertor_gin_context *gin.Context) {"})
+	binder.AddLine(gwg.Line{Content: fmt.Sprintf("return func(%s *gin.Context) {", GIN_CONTEXT_LABEL)})
 	var ps []string = []string{GIN_CONTEXT_LABEL}
 	api := o.GetApiByOperationId(i.Name)
 	var parameters []Parameter
