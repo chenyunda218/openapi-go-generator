@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	model "github.com/chenyunda218/oopenapi-go-gin-genertor/openapi"
+	model "github.com/chenyunda218/openapi-go-gin-genertor/openapi"
 	"gopkg.in/yaml.v3"
 )
 

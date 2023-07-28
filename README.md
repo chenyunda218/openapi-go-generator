@@ -18,6 +18,8 @@ cd openapi-go-gin-genertor
 go run main.go -o api -p api -i ./openapi.yaml
 ```
 
+## Installation
+
 Resource openapi yaml
 
 ```yaml
