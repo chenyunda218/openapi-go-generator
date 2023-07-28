@@ -1,4 +1,4 @@
-# openapi-go-gin-genertor
+# openapi-go-generator
 
 openapi gin server api genertor.
 
@@ -13,8 +13,8 @@ openapi gin server api genertor.
 ## Sample
 
 ```bash
-git clone https://github.com/chenyunda218/openapi-go-gin-genertor
-cd openapi-go-gin-genertor
+git clone https://github.com/chenyunda218/openapi-go-generator
+cd openapi-go-generator
 go run main.go -o api -p api -i ./openapi.yaml
 ```
 
@@ -87,7 +87,7 @@ components:
 Result
 
 ```go
-package openapigingenertor
+package openapigogenerator
 
 import (
 	"strconv"

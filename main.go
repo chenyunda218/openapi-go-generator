@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"os"
 
-	model "github.com/chenyunda218/openapi-go-gin-genertor/openapi"
+	model "github.com/chenyunda218/openapi-go-generator/openapi"
 	"gopkg.in/yaml.v3"
 )
 
 func main() {
-	root := "./openapigingenertor"
-	packageName := "openapigingenertor"
+	root := "./openapigogenerator"
+	packageName := "openapigogenerator"
 	inputFile := "./openapi.yaml"
 	argsWithoutProg := os.Args[1:]
 	for i, v := range argsWithoutProg {

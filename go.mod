@@ -1,4 +1,4 @@
-module github.com/chenyunda218/openapi-go-gin-genertor
+module github.com/chenyunda218/openapi-go-generator
 
 go 1.20
 

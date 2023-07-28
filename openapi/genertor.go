@@ -11,6 +11,7 @@ const BODY_NAME = "gin_body"
 const GIN_CONTEXT_LABEL = "gin_context"
 const GIN_ROUTER_LABEL = "gin_router"
 const GWG_API_LABEL = "gwg_api_label"
+const BUILDER_SUFFIX = "Builder"
 
 func (o Openapi) Generate(root string, packageName string) {
 	writer := gwg.Package{
@@ -30,7 +31,6 @@ func (o Openapi) Generate(root string, packageName string) {
 		}
 		writer.AddCode(o.CreateApiMounter(i))
 	}
-	writer.AddCode()
 	// Type converter
 	writer.AddCode(stringToInt32)
 	writer.AddCode(stringToInt64)
@@ -49,7 +49,7 @@ func (o Openapi) CreateApiMounter(i gwg.Interface) (fs gwg.Func) {
 		path, method := o.GetMethodAndPathByOperationId(m.Name)
 		fs.AddLine(gwg.Line{
 			Content: fmt.Sprintf("%s.%s(\"%s\", %s(%s))",
-				GIN_ROUTER_LABEL, strings.ToUpper(method), PathConverter(path), m.Name+"Binder", GWG_API_LABEL),
+				GIN_ROUTER_LABEL, strings.ToUpper(method), PathConverter(path), builderName(m.Name), GWG_API_LABEL),
 		})
 	}
 	return fs
@@ -70,6 +70,10 @@ func (o Openapi) CreateInterfaceBinders(i gwg.Interface) (binders []gwg.Func) {
 	return binders
 }
 
+func builderName(name string) string {
+	return name + BUILDER_SUFFIX
+}
+
 func (o Openapi) GetMethodAndPathByOperationId(operationId string) (string, string) {
 	for path, methods := range o.Paths {
 		for method, api := range methods {
@@ -82,7 +86,7 @@ func (o Openapi) GetMethodAndPathByOperationId(operationId string) (string, stri
 }
 
 func (o Openapi) CreateBinder(i gwg.Method, apiName string) (binder gwg.Func) {
-	binder.Name = i.Name + "Binder"
+	binder.Name = builderName(i.Name)
 	binder.Parameters.Add(
 		gwg.Pair{
 			Left:  "api",
