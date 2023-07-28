@@ -15,6 +15,9 @@ type Schema struct {
 	Ref         *string           `yaml:"$ref"`
 	Items       *Schema           `yaml:"items"`
 	AllOf       []Schema          `yaml:"allOf"`
+	Default     string            `yaml:"default"`
+	Maximum     string            `yaml:"maximum"`
+	Minimum     string            `yaml:"minimum"`
 }
 
 type Openapi struct {

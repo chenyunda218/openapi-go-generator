@@ -40,6 +40,21 @@ paths:
       responses:
         '200':
           description: Updated
+  /pets/{id}/name:
+    get:
+      tags:
+        - Pet
+      operationId: GetCatName
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+            format: int64
+          required: true
+      responses:
+        '200':
+          description: Updated
 components:
   schemas:
     Dog:
