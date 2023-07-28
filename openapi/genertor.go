@@ -158,15 +158,15 @@ func BinderSchema(s Schema, name string) string {
 	case "string":
 		return name
 	case "int64":
-		convert = "stringToInt64"
+		convert = stringToInt64.Name
 	case "int":
-		convert = "stringToInt64"
+		convert = stringToInt64.Name
 	case "int32":
-		convert = "stringToInt32"
+		convert = stringToInt32.Name
 	case "float32":
-		convert = "stringToFloat32"
+		convert = stringToFloat32.Name
 	case "float64":
-		convert = "stringToFloat64"
+		convert = stringToFloat64.Name
 	}
 	return fmt.Sprintf("%s(%s)", convert, name)
 }
@@ -276,8 +276,6 @@ func ConvertSchema(name string, s Schema) gwg.Struct {
 				return o
 			}
 		}
-	} else if len(s.OneOf) != 0 {
-		fmt.Println("one of")
 	}
 	return gwg.Struct{
 		Name:       name,
