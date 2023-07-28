@@ -57,6 +57,12 @@ paths:
           description: Updated
 components:
   schemas:
+    animal:
+      oneOf:
+        - $ref: "#/components/schemas/Cat"
+        - $ref: "#/components/schemas/Dog"
+      discriminator:
+        propertyName: petType
     Dog:
       type: object
       required:

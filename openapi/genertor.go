@@ -246,6 +246,8 @@ func (o Openapi) FindModel() []gwg.Struct {
 	for name, schema := range o.Components.Schemas {
 		if schema.AllOf != nil || schema.Type == "object" {
 			models = append(models, ConvertSchema(name, schema))
+		} else if len(schema.OneOf) != 0 && schema.Discriminator.PropertyName != "" {
+			// TODO: oneOf
 		}
 	}
 	return models
@@ -274,6 +276,8 @@ func ConvertSchema(name string, s Schema) gwg.Struct {
 				return o
 			}
 		}
+	} else if len(s.OneOf) != 0 {
+		fmt.Println("one of")
 	}
 	return gwg.Struct{
 		Name:       name,

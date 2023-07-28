@@ -5,19 +5,25 @@ type Components struct {
 	Parameters map[string]Parameter `yaml:"parameters"`
 }
 
+type Discriminator struct {
+	PropertyName string `yaml:"propertyName"`
+}
+
 type Schema struct {
-	Description string            `yaml:"description"`
-	Type        string            `yaml:"type"`
-	Format      string            `yaml:"format"`
-	Required    []string          `yaml:"required"`
-	Properties  map[string]Schema `yaml:"properties"`
-	Enum        []string          `yaml:"enum"`
-	Ref         *string           `yaml:"$ref"`
-	Items       *Schema           `yaml:"items"`
-	AllOf       []Schema          `yaml:"allOf"`
-	Default     string            `yaml:"default"`
-	Maximum     string            `yaml:"maximum"`
-	Minimum     string            `yaml:"minimum"`
+	Description   string            `yaml:"description"`
+	Type          string            `yaml:"type"`
+	Format        string            `yaml:"format"`
+	Required      []string          `yaml:"required"`
+	Properties    map[string]Schema `yaml:"properties"`
+	Enum          []string          `yaml:"enum"`
+	Ref           *string           `yaml:"$ref"`
+	Items         *Schema           `yaml:"items"`
+	AllOf         []Schema          `yaml:"allOf"`
+	OneOf         []Schema          `yaml:"oneOf"`
+	Discriminator Discriminator     `yaml:"discriminator"`
+	Default       string            `yaml:"default"`
+	Maximum       string            `yaml:"maximum"`
+	Minimum       string            `yaml:"minimum"`
 }
 
 type Openapi struct {
