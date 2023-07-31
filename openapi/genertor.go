@@ -133,10 +133,12 @@ func (o Openapi) CreateBinder(i gwg.Method, apiName string) (binder gwg.Func) {
 					valueName,
 					FirstToUpper(valueName),
 				)},
-				gwg.Line{Content: fmt.Sprintf("%s.ShouldBindJSON(&%s)",
+				gwg.Line{Content: fmt.Sprintf("if err := %s.ShouldBindJSON(&%s); err != nil {",
 					GIN_CONTEXT_LABEL,
 					valueName,
 				)},
+				gwg.Line{Content: "gin_context.JSON(400, gin.H{})"},
+				gwg.Line{Content: "}"},
 			)
 			ps = append(ps, valueName)
 		}
