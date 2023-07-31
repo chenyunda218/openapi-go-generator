@@ -1,6 +1,7 @@
 # openapi-go-generator
 
-openapi gin server api genertor.
+openapi gin server api genertor. openapi-go-generator generate gin server and go interface. Auto binding Parameters. Included in path and in query Parameters.  
+This project is just started. Please feel free to report any bugs and suggestion.
 
 ## CONFIG
 
@@ -9,6 +10,23 @@ openapi gin server api genertor.
 | -i   | Input yaml file | ./openapi.yaml       |
 | -o   | Output path     | ./openapigingenertor |
 | -p   | Package name    | openapigingenertor   |
+
+## Schema Support Feature
+
+| Type     | Supported |
+| -------- | --------- |
+| object   | ✓         |
+| string   | ✓         |
+| enum     | ✓         |
+| boolean  | ✓         |
+| int32    | ✓         |
+| int64    | ✓         |
+| float    | ✓         |
+| double   | ✓         |
+| array    | ✓         |
+| required | ✓         |
+| allOf    | ✓         |
+| oneOf    | ✗         |
 
 ## Sample
 
@@ -151,7 +169,7 @@ package main
 
 import (
 	"fmt"
-	api "genen/api"
+	"genen/api"
 
 	"github.com/gin-gonic/gin"
 )
@@ -178,18 +196,3 @@ func main() {
 
 - Generate go interface
 - Generate gin router
-
-| Type     | Supported |
-| -------- | --------- |
-| object   | ✓         |
-| string   | ✓         |
-| enum     | ✓         |
-| boolean  | ✓         |
-| int32    | ✓         |
-| int64    | ✓         |
-| float    | ✓         |
-| double   | ✓         |
-| array    | ✓         |
-| oneOf    | ✓         |
-| required | ✓         |
-| anyOf    | ✗         |
