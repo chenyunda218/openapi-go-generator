@@ -301,7 +301,7 @@ func ConvertProperty(label string, s Schema, required bool) gwg.Property {
 	tags := []gwg.Tag{
 		{Label: "json", Content: FirstToLower(label)},
 	}
-	if required {
+	if !required {
 		tags = []gwg.Tag{
 			{Label: "json", Content: FirstToLower(label) + ",omitempty"},
 		}
