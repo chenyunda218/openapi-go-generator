@@ -138,6 +138,7 @@ func (o Openapi) CreateBinder(i gwg.Method, apiName string) (binder gwg.Func) {
 					valueName,
 				)},
 				gwg.Line{Content: "gin_context.JSON(400, gin.H{})"},
+				gwg.Line{Content: "return"},
 				gwg.Line{Content: "}"},
 			)
 			ps = append(ps, valueName)
