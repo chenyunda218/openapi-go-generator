@@ -309,12 +309,12 @@ func ConvertProperty(label string, s Schema, required bool) gwg.Property {
 			{Label: "json", Content: FirstToLower(label) + ",omitempty"},
 		}
 	}
-	if required {
-		tags = append(tags, gwg.Tag{
-			Label:   "binding",
-			Content: "required",
-		})
-	}
+	// if required {
+	// 	tags = append(tags, gwg.Tag{
+	// 		Label:   "binding",
+	// 		Content: "required",
+	// 	})
+	// }
 	var t string
 	t = ConvertType(s)
 	if !required {
