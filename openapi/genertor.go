@@ -335,6 +335,8 @@ func ConvertType(s Schema) string {
 		return ConvertInteger(s.Format)
 	case "number":
 		return ConvertNumber(s.Format)
+	case "boolean":
+		return "bool"
 	case "array":
 		if s.Items == nil {
 			panic("Array without times")
