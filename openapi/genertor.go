@@ -197,10 +197,24 @@ func (o Openapi) CreateInterface(group string) (i gwg.Interface) {
 					if p.Ref != nil {
 						p = o.GetParameter(RefObject(*parameter.Ref))
 					}
-					method.Parameters.Add(gwg.Pair{
-						Left:  p.Name,
-						Right: ConvertType(p.Schema),
-					})
+					if p.In == "query" {
+						if p.Schema.Type == "array" {
+							method.Parameters.Add(gwg.Pair{
+								Left:  p.Name,
+								Right: "[]string",
+							})
+						} else {
+							method.Parameters.Add(gwg.Pair{
+								Left:  p.Name,
+								Right: ConvertType(p.Schema),
+							})
+						}
+					} else {
+						method.Parameters.Add(gwg.Pair{
+							Left:  p.Name,
+							Right: ConvertType(p.Schema),
+						})
+					}
 				}
 				if api.RequestBody != nil {
 					if api.RequestBody.Content.Json != nil {
@@ -315,12 +329,6 @@ func ConvertProperty(label string, s Schema, required bool) gwg.Property {
 			{Label: "json", Content: FirstToLower(label) + ",omitempty"},
 		}
 	}
-	// if required {
-	// 	tags = append(tags, gwg.Tag{
-	// 		Label:   "binding",
-	// 		Content: "required",
-	// 	})
-	// }
 	var t string
 	t = ConvertType(s)
 	if !required {
@@ -349,7 +357,6 @@ func ConvertType(s Schema) string {
 		}
 		return fmt.Sprintf("[]%s", ConvertType(*s.Items))
 	}
-
 	if s.Ref != nil {
 		return RefObject(*s.Ref)
 	}
@@ -369,8 +376,6 @@ func ConvertInteger(format string) string {
 
 func ConvertNumber(format string) string {
 	switch format {
-	case "double":
-		return "float64"
 	case "float":
 		return "float32"
 	default:
