@@ -112,10 +112,16 @@ func (o Openapi) CreateBinder(i gwg.Method, apiName string) (binder gwg.Func) {
 			binder.AddLine(
 				gwg.Line{Content: fmt.Sprintf("%s := %s.Param(\"%s\")", p.Name, GIN_CONTEXT_LABEL, p.Name)},
 			)
-		} else {
-			binder.AddLine(
-				gwg.Line{Content: fmt.Sprintf("%s := %s.Query(\"%s\")", p.Name, GIN_CONTEXT_LABEL, p.Name)},
-			)
+		} else if p.In == "query" {
+			if p.Schema.Type == "array" {
+				binder.AddLine(
+					gwg.Line{Content: fmt.Sprintf("%s := %s.QueryArray(\"%s\")", p.Name, GIN_CONTEXT_LABEL, p.Name)},
+				)
+			} else {
+				binder.AddLine(
+					gwg.Line{Content: fmt.Sprintf("%s := %s.Query(\"%s\")", p.Name, GIN_CONTEXT_LABEL, p.Name)},
+				)
+			}
 		}
 		if p.Ref != nil {
 			finded := o.GetParameter(RefObject(*p.Ref))

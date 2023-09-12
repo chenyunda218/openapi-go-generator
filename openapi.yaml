@@ -52,6 +52,7 @@ paths:
             type: integer
             format: int64
           required: true
+        - $ref: '#/components/parameters/Good'
       responses:
         '200':
           description: Updated
@@ -82,3 +83,27 @@ components:
           type: boolean
         age:
           type: integer
+  parameters:
+    IndexParam:
+      name: index
+      in: query
+      description: 'Current page index'
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    LimitParam:
+      name: limit
+      in: query
+      description: 'Total pages'
+      schema:
+        type: integer
+        minimum: 1
+        default: 10
+    Good:
+      name: good
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
